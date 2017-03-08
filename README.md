@@ -1,17 +1,20 @@
-Tools for building Rump Kernels [![Build Status](https://travis-ci.org/rumpkernel/buildrump.sh.png?branch=master)](https://travis-ci.org/rumpkernel/buildrump.sh)
-===============================
+Repository used to torture Rump Kernels
+=======================================
 
-The _buildrump.sh_ script is a tool for (cross-)building
-[rump kernels](http://rumpkernel.org/) for a variety of platforms.
-The purpose is to make it easy to build rump kernels on any host for
-virtually any target.  There are practically no dependencies apart from a
-(cross-)working toolchain.  When invoked without parameters, buildrump.sh
-will download the necessary source code, build the kernel drivers for
-POSIX'y userspace, and run a number of tests.
+BUILD
+=====
 
-```
-./buildrump.sh
-```
+Ubuntu with gcc-6 as host:
 
-See [the wiki](http://wiki.rumpkernel.org/Repo:-buildrump.sh) for more
-information and further instructions.
+Address Sanitizer:
+
+ - `./buildrump.sh  tools`
+ - `./buildrump.sh  -F CFLAGS="-fsanitize=thread -O0 -g" -F LDFLAGS="-ltsan -fuse-ld=gold" -j8  tools build`
+ 
+Thread Sanitizer
+
+ - `./buildrump.sh  tools`
+ - `./buildrump.sh  -F CFLAGS="-fsanitize=address -O0 -g" -F LDFLAGS="-lasan -fuse-ld=gold" -j8  tools build`
+ 
+TODO
+====
