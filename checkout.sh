@@ -68,6 +68,8 @@ GITREVFILE='.srcgitrev'
 
 checkoutcvs ()
 {
+	echo "unsupported"
+	exit 1
 
 	# checkout or export
 	case $1 in
@@ -176,26 +178,18 @@ checkoutcvs ()
 # destination directory, assume that it's the correct repo.
 checkoutgit ()
 {
-
 	echo ">> Fetching NetBSD sources to ${SRCDIR} using git"
 
 	[ -e "${SRCDIR}" -a ! -e "${SRCDIR}/.git" ] && \
 	    die Not a git repository: ${SRCDIR}
 
-	gitrev=$(cat ${BRDIR}/${GITREVFILE})
-	[ $? -eq 0 ] || die Cannot determine relevant git revision
 	if [ -d ${SRCDIR}/.git ] ; then
 		cd ${SRCDIR}
-		[ -z "$(${GIT} status --porcelain)" ] \
-		    || die "Cloned repo in ${SRCDIR} is not clean, aborting."
-		${GIT} fetch origin buildrump-src || die Failed to fetch repo
+		${GIT} pull || die Failed to fetch repo
 	else
-		${GIT} clone -n ${GITREPO} ${SRCDIR} || die Clone failed
+		${GIT} clone -b buildrump-src --single-branch ${GITREPO} ${SRCDIR} || die Clone failed
 		cd ${SRCDIR}
 	fi
-
-	${GIT} checkout -q ${gitrev} || \
-	    die 'Could not checkout correct git revision. Wrong repo?'
 }
 
 hubdateonebranch ()
@@ -283,6 +277,8 @@ githubdate ()
 
 checkcheckout ()
 {
+	# we know what we're doing :)
+	return 0
 
 	# if it's not a git repo, don't bother
 	if [ ! -e "${SRCDIR}/.buildrumpsh-repo" -o ! -d "${SRCDIR}/.git" ]; then
