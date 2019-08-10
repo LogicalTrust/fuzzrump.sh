@@ -81,6 +81,7 @@ helpme ()
 	printf "\tcheckoutgit:\tfetch NetBSD sources to srcdir from github\n"
 	printf "\tcheckoutcvs:\tfetch NetBSD sources to srcdir from anoncvs\n"
 	printf "\tcheckout:\talias for checkoutgit\n"
+	printf "\tinterceptors:\tbuild fuzzing helper library (mostly for ASAN)\n"
 	printf "\ttools:\t\tbuild necessary tools to tooldir\n"
 	printf "\tbuild:\t\tbuild everything related to rump kernels\n"
 	printf "\tinstall:\tinstall rump kernel components into destdir\n"
@@ -491,6 +492,13 @@ maketoolwrapper ()
 	chmod 755 ${tname}
 }
 
+makeinterceptors ()
+{
+	cd interceptors/
+	make
+	cd ../
+}
+
 #
 # Create tools and wrappers.  This step needs to be run at least once.
 # The routine is run if the "tools" argument is specified.
@@ -573,11 +581,7 @@ int main() {gzopen(NULL, NULL); return 0;}' -lz \
 
 	cat >> "${MKCONF}" << EOF
 BUILDRUMP_IMACROS=${BRIMACROS}
-.if \${BUILDRUMP_SYSROOT:Uno} == "yes"
-BUILDRUMP_CPPFLAGS=--sysroot=\${BUILDRUMP_STAGE}
-.else
 BUILDRUMP_CPPFLAGS=-I\${BUILDRUMP_STAGE}/usr/include
-.endif
 BUILDRUMP_CPPFLAGS+=${EXTRA_CPPFLAGS}
 LIBDO.pthread=_external
 INSTPRIV=-U
@@ -591,6 +595,13 @@ MKNLS=no
 RUMP_NPF_TESTING?=no
 RUMPRUN=yes
 EOF
+
+	# rump renames symbols which are used by afl instrumentation glue
+	# for afl-fuzz. So if we compile with AFL simply omit it.
+	if ${HAVE_AFL}; then
+		echo "RUMP_SYM_NORENAME=atoi|getenv|write|shmat|close|_exit|read|fork|waitpid" >> "${MKCONF}"
+		exit 1
+	fi
 
 	if ! ${KERNONLY}; then
 		# queue.h is not available on all systems, but we need it for
@@ -942,6 +953,14 @@ evaltoolchain ()
 		HAVE_PCC=yes
 	else
 		die Unsupported \${CC} "(`type ${CC}`)"
+	fi
+
+	unset HAVE_AFL
+	# Check if we compile rump with afl wrappers
+	if [ "${CC}" != "${CC#afl-}" ]; then
+		HAVE_AFL=true
+	else
+		HAVE_AFL=false
 	fi
 
 	# See if we have a c++ compiler.  If CXX is not set,
@@ -1460,7 +1479,7 @@ parseargs ()
 	# Determine what which parts we should execute.
 	#
 	allcmds='checkout checkoutcvs checkoutgit probe tools build install
-	    tests fullbuild kernelheaders'
+	    tests fullbuild kernelheaders interceptors'
 	fullbuildcmds="tools build install"
 
 	# for compat, so that previously valid invocations don't
@@ -1626,8 +1645,12 @@ parseargs "$@"
 
 ${docheckout} && { ${BRDIR}/checkout.sh ${checkoutstyle} ${SRCDIR} || exit 1; }
 
+if ${dointerceptors}; then
+	${dointerceptors} && makeinterceptors
+fi
+
 if ${doprobe} || ${dotools} || ${dobuild} || ${dokernelheaders} \
-    || ${doinstall} || ${dotests}; then
+    || ${doinstall} || ${dotests} || ${dointerceptors}; then
 	${doprobe} || resolvepaths
 
 	evaltoolchain
