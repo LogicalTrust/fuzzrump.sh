@@ -603,6 +603,12 @@ EOF
 		exit 1
 	fi
 
+	# For fuzzrump purposes turn off warnings to let it build with older
+	# clang versions (which apparently are required by AFL).
+	if [ "${CC_FLAVOR}" = 'clang' ]; then
+		echo "NOCLANGERROR=1" >> "${MKCONF}"
+	fi
+
 	if ! ${KERNONLY}; then
 		# queue.h is not available on all systems, but we need it for
 		# the hypervisor build.  So, we make it available in tooldir.
