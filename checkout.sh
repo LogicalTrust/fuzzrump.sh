@@ -42,8 +42,8 @@
 # that once buildrump.sh is published, the NetBSD sources will be
 # available via git.
 #
-NBSRC_CVSDATE="20160728 1100UTC"
-NBSRC_CVSFLAGS="-z3"
+NBSRC_CVSDATE="dummy"
+NBSRC_CVSFLAGS="dummy"
 
 # If set, timestamp for src/sys/rump/listsrcdir.  If unset,
 # NBSRC_CVSDATE is used.
@@ -62,8 +62,8 @@ NBSRC_EXTRA_posix=''
 
 NBSRC_EXTRA_usr=''
 
-GITREPO='https://github.com/akat1/src-netbsd'
-GITREPOPUSH='git@github.com:akat1/src-netbsd'
+GITREPO='https://github.com/akat1/fuzzrump-src'
+GITREPOPUSH='git@github.com:akat1/fuzzrump-src'
 GITREVFILE='.srcgitrev'
 
 checkoutcvs ()
@@ -187,7 +187,7 @@ checkoutgit ()
 		cd ${SRCDIR}
 		${GIT} pull || die Failed to fetch repo
 	else
-		${GIT} clone -b buildrump-src --single-branch ${GITREPO} ${SRCDIR} || die Clone failed
+		${GIT} clone --depth 1 --single-branch ${GITREPO} ${SRCDIR} || die Clone failed
 		cd ${SRCDIR}
 	fi
 }
@@ -200,7 +200,7 @@ hubdateonebranch ()
 
 	git checkout ${branchbase}-src-clean
 	rm -rf *
-	checkoutcvs export ${exportname}
+        checkoutcvs export ${exportname}
 	echo ">> adding files to the \"${branchbase}-src-clean\" branch"
 	${GIT} add -A
 
