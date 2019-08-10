@@ -600,7 +600,6 @@ EOF
 	# for afl-fuzz. So if we compile with AFL simply omit it.
 	if ${HAVE_AFL}; then
 		echo "RUMP_SYM_NORENAME=atoi|getenv|write|shmat|close|_exit|read|fork|waitpid" >> "${MKCONF}"
-		exit 1
 	fi
 
 	# For fuzzrump purposes turn off warnings to let it build with older
