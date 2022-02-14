@@ -460,7 +460,6 @@ rump_netconfig_auto_ipv6(const char *ifname)
 	buf += sizeof opt;
 	memcpy(buf, CLLADDR(ifp->if_sadl), ETHER_ADDR_LEN);
 
-	ip6_accept_rtadv = 1;
 	rv = rump_netconfig_ifup(ifname);
 	if (rv != 0)
 		goto out;
