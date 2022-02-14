@@ -57,7 +57,7 @@
 static struct socket *routeso;
 
 int
-if_init(struct interface *iface)
+if_init(struct ifnet *iface)
 {
 	/* BSD promotes secondary address by default */
 	return 0;

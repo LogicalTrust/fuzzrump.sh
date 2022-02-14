@@ -103,7 +103,7 @@ int inet_cidrtoaddr(int, struct in_addr *);
 
 void up_interface(struct interface *);
 int if_conf(struct interface *);
-int if_init(struct interface *);
+int if_init(struct ifnet *);
 
 int do_address(const char *,
     struct in_addr *, struct in_addr *, struct in_addr *, int);
