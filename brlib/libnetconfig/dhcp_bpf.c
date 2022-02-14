@@ -39,7 +39,6 @@
 #include <sys/uio.h>
 
 #include <net/bpf.h>
-#include <net/if.h>
 
 #include "dhcp_common.h"
 #include "dhcp_dhcp.h"
@@ -67,7 +66,7 @@ dhcp_open_socket(struct interface *iface, int protocol)
 	    FREAD|FWRITE, S_IFCHR, curlwp)) != 0) {
 		if (error == EMOVEFD && l->l_dupfd >= 0) {
 			error = fd_dupopen(l->l_dupfd,
-			    &indx, FREAD|FWRITE, error);
+			    false, FREAD|FWRITE, &indx);
 			if (error == 0)
 				fd = indx;
 		}
