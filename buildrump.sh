@@ -79,7 +79,6 @@ helpme ()
 	echo
 	printf "supported commands (default => checkout+fullbuild+tests):\n"
 	printf "\tcheckoutgit:\tfetch NetBSD sources to srcdir from github\n"
-	printf "\tcheckoutcvs:\tfetch NetBSD sources to srcdir from anoncvs\n"
 	printf "\tcheckout:\talias for checkoutgit\n"
 	printf "\tinterceptors:\tbuild fuzzing helper library (mostly for ASAN)\n"
 	printf "\ttools:\t\tbuild necessary tools to tooldir\n"
@@ -598,8 +597,11 @@ EOF
 
 	# rump renames symbols which are used by afl instrumentation glue
 	# for afl-fuzz. So if we compile with AFL simply omit it.
+
+    # XXX: tolower?
+
 	if ${HAVE_AFL}; then
-		echo "RUMP_SYM_NORENAME=atoi|getenv|write|shmat|close|_exit|read|fork|waitpid" >> "${MKCONF}"
+		echo "RUMP_SYM_NORENAME=tolower|atoi|getenv|write|shmat|close|_exit|read|fork|waitpid" >> "${MKCONF}"
 	fi
 
 	# For fuzzrump purposes turn off warnings to let it build with older
@@ -1483,7 +1485,7 @@ parseargs ()
 	#
 	# Determine what which parts we should execute.
 	#
-	allcmds='checkout checkoutcvs checkoutgit probe tools build install
+	allcmds='checkout checkoutgit probe tools build install
 	    tests fullbuild kernelheaders interceptors'
 	fullbuildcmds="tools build install"
 
@@ -1527,10 +1529,6 @@ parseargs ()
 	if ${docheckout} || ${docheckoutgit} ; then
 		docheckout=true
 		checkoutstyle=git
-	fi
-	if ${docheckoutcvs} ; then
-		docheckout=true
-		checkoutstyle=cvs
 	fi
 
 	# sanity checks
